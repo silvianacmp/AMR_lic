@@ -1,8 +1,10 @@
 import logging
 import amr_util.Actions as act
 
-
+tokenExceptions=0
+swapExceptions=0
 def generate_action_sequence(amr_graph, sentence, verbose=True):
+
     if verbose is False:
         logging.disable(logging.INFO)
 
@@ -47,6 +49,7 @@ def generate_action_sequence(amr_graph, sentence, verbose=True):
         if not reduce_succeeded:
             # If a swap was performed and we still can't reduce the top two elements we're in a deadlock, return.
             if last_action_swap:
+                swapExceptions+=1
                 logging.debug("Last swap didn't solve the stack. Tokens left on the stack: %s. Actions %s.", stack, actions)
                 raise Exception("Could not generate action sequence. Swap not working")
             if current_token >= len(buffer):
@@ -58,6 +61,7 @@ def generate_action_sequence(amr_graph, sentence, verbose=True):
                     actions.append(act.AMRAction.build("SW"))
                     last_action_swap = True
                 else:
+                    tokenExceptions+=1
                     logging.debug("Tokens left on the stack: %s. Actions %s.", stack, actions)
                     raise Exception("Could not generate action sequence. Tokens left on stack")
             # try to shift the current token
